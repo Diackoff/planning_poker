@@ -24,7 +24,7 @@
         }
 
         // REPLACE WITH YOUR DEPLOYED SERVER URL (e.g., https://your-app.onrender.com)
-        const socket = io('http://localhost:4000'); 
+        const socket = io('https://planning-poker-tool.onrender.com'); 
 
         function App() {
             const [roomState, setRoomState] = useState({ players: [], features: [], revealed: false, estimationFinished: false, activeStoryId: null, totals: {BE:0, FE:0, QA:0} });
