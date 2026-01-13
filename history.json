@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1768309160699,
+    "name": "WoT plus sprint 1",
+    "stories": [
+      {
+        "id": 1768309179595,
+        "name": "Final assets",
+        "url": "https://jira.wargaming.net/browse/WOTPRG-9666",
+        "finalScores": {
+          "US": 3,
+          "BE": 1,
+          "FE": 2,
+          "QA": 0
+        }
+      },
+      {
+        "id": 1768309197403,
+        "name": "Code review",
+        "url": "https://jira.wargaming.net/browse/WOTPRG-9666",
+        "finalScores": {
+          "US": 3,
+          "BE": 2,
+          "FE": 1,
+          "QA": 0
+        }
+      },
+      {
+        "id": 1768309211564,
+        "name": "Reward screen",
+        "url": "https://jira.wargaming.net/browse/WOTPRG-9666",
+        "finalScores": {
+          "US": 11,
+          "BE": 3,
+          "FE": 8,
+          "QA": 0
+        }
+      }
+    ]
+  }
+]
