@@ -9,9 +9,8 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body class="bg-slate-900 text-slate-100">
+<body class="bg-slate-900 text-white">
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
@@ -25,169 +24,146 @@
             const [roomState, setRoomState] = useState(null);
             const [userName, setUserName] = useState('');
             const [role, setRole] = useState('BE');
-            const [isScrumMaster, setIsScrumMaster] = useState(false);
+            const [isSM, setIsSM] = useState(false);
             const [joined, setJoined] = useState(false);
             const [tempScores, setTempScores] = useState({ BE: 0, FE: 0, QA: 0 });
 
             useEffect(() => {
                 socket.on('ROOM_STATE', (state) => {
-                    console.log("New state received:", state);
+                    console.log("State update:", state);
                     setRoomState(state);
                 });
                 return () => socket.off('ROOM_STATE');
             }, []);
-
-            // Синхронизация локальных полей ввода с выбранной стори
-            useEffect(() => {
-                if (roomState?.activeStoryId) {
-                    const allStories = (roomState.features || []).flatMap(f => f.stories || []);
-                    const active = allStories.find(s => s.id === roomState.activeStoryId);
-                    if (active) setTempScores(active.finalScores || { BE: 0, FE: 0, QA: 0 });
-                }
-            }, [roomState?.activeStoryId]);
-
-            const joinRoom = () => {
-                if (!userName) return alert("Enter name");
-                socket.emit('JOIN_ROOM', { roomId, userName, role: isScrumMaster ? 'SM' : role, isScrumMaster });
-                setJoined(true);
-            };
 
             const activeStory = useMemo(() => {
                 if (!roomState) return null;
                 return (roomState.features || []).flatMap(f => f.stories || []).find(s => s.id === roomState.activeStoryId);
             }, [roomState]);
 
-            const isMeSM = roomState?.players?.find(p => p.id === socket.id)?.isScrumMaster;
+            useEffect(() => {
+                if (activeStory) setTempScores(activeStory.finalScores || { BE: 0, FE: 0, QA: 0 });
+            }, [activeStory?.id]);
+
+            const safeText = (val) => {
+                if (val === null || val === undefined) return "";
+                if (typeof val === 'object') return val.name || val.userName || "";
+                return String(val);
+            };
 
             if (!joined) {
                 return (
-                    <div className="flex items-center justify-center h-screen bg-slate-900">
-                        <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center">
-                            <h2 className="text-2xl font-black mb-4 text-blue-400 uppercase italic">Planning Poker</h2>
-                            <input type="text" placeholder="Name" className="w-full p-3 mb-4 bg-slate-900 rounded border border-slate-700 text-white" onChange={(e) => setUserName(e.target.value)} />
-                            <select className="w-full p-3 mb-4 bg-slate-900 rounded border border-slate-700" value={role} onChange={(e) => setRole(e.target.value)}>
+                    <div className="flex items-center justify-center h-screen">
+                        <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 w-80 text-center">
+                            <h2 className="text-xl font-black mb-4 text-blue-400 uppercase italic">Planning Poker</h2>
+                            <input type="text" placeholder="Your Name" className="w-full p-2 mb-4 bg-slate-900 border border-slate-700 rounded" onChange={e => setUserName(e.target.value)} />
+                            <select className="w-full p-2 mb-4 bg-slate-900 border border-slate-700 rounded" value={role} onChange={e => setRole(e.target.value)}>
                                 <option value="BE">Backend</option><option value="FE">Frontend</option><option value="QA">QA</option>
                             </select>
-                            <label className="flex items-center gap-2 mb-6 text-slate-400 justify-center cursor-pointer">
-                                <input type="checkbox" checked={isScrumMaster} onChange={(e) => setIsScrumMaster(e.target.checked)} />
-                                <span>I am Scrum Master</span>
+                            <label className="flex items-center justify-center gap-2 mb-6 text-sm text-slate-400 cursor-pointer">
+                                <input type="checkbox" checked={isSM} onChange={e => setIsSM(e.target.checked)} />
+                                <span>Scrum Master Mode</span>
                             </label>
-                            <button onClick={joinRoom} className="w-full bg-blue-600 p-3 rounded-xl font-black uppercase">Join Room</button>
+                            <button onClick={() => { if(userName) { socket.emit('JOIN_ROOM', { roomId, userName, role: isSM?'SM':role, isScrumMaster: isSM }); setJoined(true); } }} className="w-full bg-blue-600 py-2 rounded font-bold uppercase">Enter</button>
                         </div>
                     </div>
                 );
             }
 
-            if (!roomState) return <div className="p-10 text-white">Connecting to server...</div>;
+            if (!roomState) return <div className="p-10 text-center uppercase font-bold animate-pulse">Connecting...</div>;
+
+            const isMeSM = roomState.players.find(p => p.id === socket.id)?.isScrumMaster;
 
             return (
-                <div className="flex h-screen overflow-hidden bg-slate-900 text-white">
+                <div className="flex h-screen overflow-hidden">
                     {/* BACKLOG */}
-                    <div className="w-80 bg-slate-800 border-r border-slate-700 flex flex-col">
-                        <div className="p-4 border-b border-slate-700 flex justify-between">
-                            <span className="font-bold text-xs uppercase text-slate-500">Backlog</span>
-                            <button onClick={() => {navigator.clipboard.writeText(window.location.href); alert("Copied!")}} className="text-[10px] text-blue-400">COPY LINK</button>
+                    <div className="w-64 bg-slate-800 border-r border-slate-700 flex flex-col">
+                        <div className="p-4 border-b border-slate-700 flex justify-between items-center">
+                            <span className="text-[10px] font-black opacity-50 uppercase tracking-widest italic">Backlog</span>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                            {roomState.features.map(f => (
-                                <div key={f.id}>
-                                    <div className="flex justify-between text-[10px] text-blue-500 font-bold mb-2 uppercase">
-                                        <span>{String(f.name)}</span>
-                                        {isMeSM && <button onClick={() => {
-                                            const n = prompt("Story name:");
-                                            const u = prompt("Link (optional):");
-                                            if(n) socket.emit('ADD_STORY', { roomId, featureId: f.id, storyName: n, storyUrl: u });
-                                        }} className="bg-blue-600 text-white px-1 rounded">+ STORY</button>}
+                        <div className="flex-1 overflow-y-auto p-3 space-y-4">
+                            {(roomState.features || []).map(f => (
+                                <div key={f.id} className="space-y-1">
+                                    <div className="flex justify-between items-center text-[10px] text-blue-500 font-black uppercase italic mb-1">
+                                        <span>{safeText(f.name)}</span>
+                                        {isMeSM && <button onClick={() => { const n = prompt("Name:"); const u = prompt("Link:"); if(n) socket.emit('ADD_STORY', { roomId, featureId: f.id, storyName: n, storyUrl: u }); }} className="bg-blue-600 text-white px-1 rounded">+ STORY</button>}
                                     </div>
-                                    {f.stories.map(s => (
-                                        <div 
-                                            key={s.id} 
-                                            onClick={() => isMeSM && socket.emit('SELECT_STORY', { roomId, storyId: s.id })}
-                                            className={`p-2 rounded text-xs mb-1 cursor-pointer transition-all ${roomState.activeStoryId === s.id ? 'bg-blue-600 font-bold' : 'bg-slate-700 hover:bg-slate-600'}`}
-                                        >
-                                            {String(s.name)}
+                                    {(f.stories || []).map(s => (
+                                        <div key={s.id} onClick={() => isMeSM && socket.emit('SELECT_STORY', { roomId, storyId: s.id })} className={`p-2 rounded text-[11px] cursor-pointer transition-all ${roomState.activeStoryId === s.id ? 'bg-blue-600 font-bold' : 'bg-slate-700 hover:bg-slate-600'}`}>
+                                            {safeText(s.name)}
                                         </div>
                                     ))}
                                 </div>
                             ))}
-                            {isMeSM && <button onClick={() => {
-                                const n = prompt("Sprint name:");
-                                if(n) socket.emit('ADD_FEATURE', { roomId, name: n });
-                            }} className="w-full border border-dashed border-slate-600 p-2 text-[10px] text-slate-500">+ ADD SPRINT</button>}
+                            {isMeSM && <button onClick={() => { const n = prompt("Sprint name:"); if(n) socket.emit('ADD_FEATURE', { roomId, name: n }); }} className="w-full border border-dashed border-slate-600 p-2 text-[10px] text-slate-500 hover:text-white uppercase font-bold tracking-tighter italic">+ NEW SPRINT</button>}
                         </div>
                     </div>
 
                     {/* MAIN */}
-                    <div className="flex-1 flex flex-col">
+                    <div className="flex-1 flex flex-col bg-slate-900">
                         <div className="p-10 text-center">
-                            <h2 className="text-4xl font-black uppercase italic mb-4">
-                                {activeStory ? String(activeStory.name) : "Select a Story"}
-                            </h2>
-                            <div className="flex justify-center gap-4 text-sm">
-                                {activeStory?.url && <a href={activeStory.url.startsWith('http') ? activeStory.url : `https://${activeStory.url}`} target="_blank" className="text-blue-400 underline">Open Link</a>}
-                                {isMeSM && activeStory && <button onClick={() => {
-                                    const u = prompt("New Link:", activeStory.url);
-                                    if(u !== null) socket.emit('UPDATE_STORY_DATA', { roomId, storyId: activeStory.id, url: u });
-                                }} className="text-slate-500 text-xs">EDIT LINK</button>}
+                            <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-2">{activeStory ? safeText(activeStory.name) : "Waiting for SM..."}</h2>
+                            <div className="flex justify-center gap-4 text-xs font-bold uppercase italic text-blue-400">
+                                {activeStory?.url && <a href={activeStory.url.startsWith('http')?activeStory.url:`https://${activeStory.url}`} target="_blank">View Task ↗</a>}
+                                {isMeSM && activeStory && <button onClick={() => { const u = prompt("Link:", activeStory.url); if(u !== null) socket.emit('UPDATE_STORY_DATA', { roomId, storyId: activeStory.id, url: u }); }} className="text-slate-500">Edit Link</button>}
                             </div>
                         </div>
 
-                        <div className="flex-1 flex justify-center items-center gap-6 px-10">
-                            {roomState.players.filter(p => !p.isScrumMaster).map(p => (
+                        <div className="flex-1 flex justify-center items-center gap-6">
+                            {(roomState.players || []).filter(p => !p.isScrumMaster).map(p => (
                                 <div key={p.id} className="flex flex-col items-center">
-                                    <div className={`w-16 h-24 rounded-xl border-2 flex items-center justify-center text-xl font-bold ${
-                                        roomState.revealed ? 'bg-white text-black' : (p.vote ? 'bg-blue-600 border-blue-400' : 'bg-slate-800 border-slate-700 opacity-30')
-                                    }`}>
+                                    <div className={`w-16 h-24 rounded-xl border-2 flex items-center justify-center text-xl font-bold transition-all ${roomState.revealed ? 'bg-white text-black' : (p.vote ? 'bg-blue-600 border-blue-400' : 'bg-slate-800 border-slate-700 opacity-20')}`}>
                                         {roomState.revealed ? p.vote : (p.vote ? '✓' : '')}
                                     </div>
-                                    <span className="text-[10px] mt-2 text-slate-400">{String(p.name)}</span>
+                                    <span className="text-[10px] mt-2 opacity-50 uppercase italic font-bold tracking-widest">{safeText(p.name)}</span>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="p-8 border-t border-slate-800 text-center">
+                        <div className="p-8 border-t border-slate-800 text-center bg-slate-800/20">
                             {!isMeSM ? (
                                 <div className="flex justify-center gap-2">
                                     {[1, 2, 3, 5, 8, 13, 21].map(v => (
-                                        <button key={v} onClick={() => socket.emit('SEND_VOTE', { roomId, vote: v })} className="w-12 h-16 bg-slate-700 rounded-lg font-bold hover:bg-blue-600">{v}</button>
+                                        <button key={v} onClick={() => socket.emit('SEND_VOTE', { roomId, vote: v })} className="w-12 h-16 bg-slate-700 rounded-xl font-bold hover:bg-blue-600 transition-all active:scale-90">{v}</button>
                                     ))}
                                 </div>
                             ) : (
                                 <div className="flex justify-center gap-4">
-                                    <button onClick={() => socket.emit('REVEAL_CARDS', roomId)} className="bg-amber-500 text-black px-8 py-3 rounded-full font-bold">REVEAL</button>
-                                    <button onClick={() => socket.emit('FINISH_ESTIMATION', roomId)} className="bg-green-600 px-8 py-3 rounded-full font-bold">LOCK RESULT</button>
+                                    <button onClick={() => socket.emit('REVEAL_CARDS', roomId)} className="bg-amber-500 text-black px-10 py-3 rounded-full font-black uppercase italic tracking-widest shadow-lg shadow-amber-500/20">Reveal Cards</button>
+                                    <button onClick={() => socket.emit('FINISH_ESTIMATION', roomId)} className="bg-green-600 px-10 py-3 rounded-full font-black uppercase italic tracking-widest shadow-lg shadow-green-500/20">Lock Story</button>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* SCORES */}
-                    <div className="w-72 bg-slate-800 border-l border-slate-700 p-6 space-y-8">
-                        <div>
-                            <h3 className="text-xs font-bold text-slate-500 uppercase mb-4">Final Score</h3>
-                            <div className="text-5xl font-black text-center mb-6">{activeStory?.finalScores?.US || 0}</div>
-                            {['BE', 'FE', 'QA'].map(d => (
-                                <div key={d} className="flex items-center gap-2 mb-2">
-                                    <span className="w-10 text-[10px] text-blue-500">{d}</span>
-                                    <input type="number" disabled={!isMeSM} value={tempScores[d] || ''} 
-                                        className="flex-1 bg-slate-900 p-2 rounded text-sm outline-none border border-slate-700 focus:border-blue-500" 
-                                        onChange={(e) => {
-                                            const s = {...tempScores, [d]: Number(e.target.value)};
-                                            setTempScores(s);
-                                            socket.emit('UPDATE_STORY_DATA', { roomId, storyId: roomState.activeStoryId, scores: s });
-                                        }} 
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                        <div className="pt-6 border-t border-slate-700">
-                            <h3 className="text-xs font-bold text-slate-500 uppercase mb-4">Total Accrued</h3>
-                            {['BE', 'FE', 'QA'].map(d => (
-                                <div key={d} className="flex justify-between text-sm mb-1 text-slate-400">
-                                    <span>{d} Total:</span>
-                                    <span className="font-bold text-blue-400">{roomState.totals[d] || 0}</span>
-                                </div>
-                            ))}
+                    {/* SIDE PANEL */}
+                    <div className="w-64 bg-slate-800 border-l border-slate-700 p-6 flex flex-col">
+                        <div className="flex-1 space-y-8">
+                            <div>
+                                <h3 className="text-[10px] font-black opacity-30 uppercase italic mb-4">Current Points</h3>
+                                <div className="text-6xl font-black text-center italic tracking-tighter mb-8">{activeStory?.finalScores?.US || 0}</div>
+                                {['BE', 'FE', 'QA'].map(d => (
+                                    <div key={d} className="flex items-center gap-2 mb-3">
+                                        <span className="w-8 text-[10px] font-black text-blue-500 uppercase italic">{d}</span>
+                                        <input type="number" disabled={!isMeSM} value={tempScores[d] || ''} 
+                                            className="flex-1 bg-slate-900 border border-slate-700 p-2 rounded text-xs font-bold outline-none" 
+                                            onChange={e => {
+                                                const s = {...tempScores, [d]: Number(e.target.value)};
+                                                setTempScores(s);
+                                                socket.emit('UPDATE_STORY_DATA', { roomId, storyId: roomState.activeStoryId, scores: s });
+                                            }} />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="pt-6 border-t border-slate-700">
+                                <h3 className="text-[10px] font-black opacity-30 uppercase italic mb-4">Sprint Totals</h3>
+                                {['BE', 'FE', 'QA'].map(d => (
+                                    <div key={d} className="flex justify-between text-xs mb-2">
+                                        <span className="opacity-50 italic">{d} Total:</span>
+                                        <span className="font-bold text-blue-400">{roomState.totals?.[d] || 0}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
