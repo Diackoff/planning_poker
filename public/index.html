@@ -23,7 +23,7 @@
             window.history.replaceState({path: newUrl}, '', newUrl);
         }
 
-        const socket = io('https://planning-poker-tool.onrender.com'); 
+        const socket = io();
 
         function App() {
             const [roomState, setRoomState] = useState(null);
