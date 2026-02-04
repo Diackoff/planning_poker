@@ -1,103 +1,156 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const fs = require('fs');
+const cors = require('cors');
 
 const app = express();
+app.use(cors());
+
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
-let roomState = {
-    players: [],
-    revealed: false,
-    estimationFinished: false,
-    features: [],
-    activeStoryId: null,
-    totals: { BE: 0, FE: 0, QA: 0 }
-};
-
-const calculateTotals = () => {
-    const totals = { BE: 0, FE: 0, QA: 0 };
-    roomState.features.forEach(f => {
-        f.stories.forEach(s => {
-            if (s.finalScores) {
-                totals.BE += Number(s.finalScores.BE || 0);
-                totals.FE += Number(s.finalScores.FE || 0);
-                totals.QA += Number(s.finalScores.QA || 0);
-            }
-        });
-    });
-    return totals;
-};
+// Хранилище комнат в памяти сервера
+const rooms = {};
 
 io.on('connection', (socket) => {
-    socket.emit('ROOM_STATE', roomState);
+    console.log('User connected:', socket.id);
 
-    socket.on('JOIN_ROOM', ({ userName, role, isScrumMaster }) => {
-        roomState.players.push({ id: socket.id, name: userName, role: isScrumMaster ? 'SM' : role, isScrumMaster: !!isScrumMaster, vote: null });
-        io.emit('ROOM_STATE', roomState);
+    socket.on('JOIN_ROOM', ({ roomId, userName, role, isScrumMaster }) => {
+        socket.join(roomId);
+        
+        if (!rooms[roomId]) {
+            rooms[roomId] = {
+                players: [],
+                features: [],
+                activeStoryId: null,
+                revealed: false,
+                estimationFinished: false,
+                totals: { BE: 0, FE: 0, QA: 0 }
+            };
+        }
+
+        // Удаляем старую сессию игрока, если она была
+        rooms[roomId].players = rooms[roomId].players.filter(p => p.id !== socket.id);
+        
+        // Добавляем игрока (имя принудительно делаем строкой)
+        rooms[roomId].players.push({
+            id: socket.id,
+            name: String(userName),
+            role: role,
+            isScrumMaster: !!isScrumMaster,
+            vote: null
+        });
+
+        io.to(roomId).emit('ROOM_STATE', rooms[roomId]);
     });
 
-    socket.on('ADD_FEATURE', (name) => {
-        roomState.features.push({ id: Date.now(), name, stories: [] });
-        io.emit('ROOM_STATE', roomState);
-    });
-
-    socket.on('ADD_STORY', ({ featureId, storyName, storyUrl }) => {
-        const feature = roomState.features.find(f => f.id === featureId);
-        if (feature) {
-            feature.stories.push({ id: Date.now(), name: storyName, url: storyUrl || '', finalScores: { US: 0, BE: 0, FE: 0, QA: 0 } });
-            io.emit('ROOM_STATE', roomState);
+    socket.on('ADD_FEATURE', ({ roomId, name }) => {
+        const room = rooms[roomId];
+        if (room) {
+            room.features.push({
+                id: Math.random().toString(36).substring(2, 9),
+                name: String(name), // Защита от [object Object]
+                stories: []
+            });
+            io.to(roomId).emit('ROOM_STATE', room);
         }
     });
 
-    // Исправленный метод обновления стори (URL и оценки вместе)
-    socket.on('UPDATE_STORY_DATA', ({ storyId, scores, url }) => {
-        roomState.features.forEach(f => {
-            const story = f.stories.find(s => s.id === storyId);
+    socket.on('ADD_STORY', ({ roomId, featureId, storyName, storyUrl }) => {
+        const room = rooms[roomId];
+        if (room) {
+            const feature = room.features.find(f => f.id === featureId);
+            if (feature) {
+                feature.stories.push({
+                    id: Math.random().toString(36).substring(2, 9),
+                    name: String(storyName), // Защита от [object Object]
+                    url: storyUrl ? String(storyUrl) : "",
+                    finalScores: { BE: 0, FE: 0, QA: 0, US: 0 }
+                });
+                io.to(roomId).emit('ROOM_STATE', room);
+            }
+        }
+    });
+
+    socket.on('SELECT_STORY', ({ roomId, storyId }) => {
+        const room = rooms[roomId];
+        if (room) {
+            room.activeStoryId = storyId;
+            room.revealed = false;
+            room.estimationFinished = false;
+            // Сбрасываем голоса при выборе новой задачи
+            room.players.forEach(p => p.vote = null);
+            io.to(roomId).emit('ROOM_STATE', room);
+        }
+    });
+
+    socket.on('SEND_VOTE', ({ roomId, vote }) => {
+        const room = rooms[roomId];
+        if (room && !room.estimationFinished) {
+            const player = room.players.find(p => p.id === socket.id);
+            if (player) {
+                // Сохраняем ТОЛЬКО число, чтобы не ломать фронтенд объектами
+                player.vote = Number(vote);
+                io.to(roomId).emit('ROOM_STATE', room);
+            }
+        }
+    });
+
+    socket.on('REVEAL_CARDS', (roomId) => {
+        const room = rooms[roomId];
+        if (room) {
+            room.revealed = true;
+            io.to(roomId).emit('ROOM_STATE', room);
+        }
+    });
+
+    socket.on('UPDATE_STORY_DATA', ({ roomId, storyId, scores, url }) => {
+        const room = rooms[roomId];
+        if (room) {
+            const story = room.features.flatMap(f => f.stories).find(s => s.id === storyId);
             if (story) {
                 if (scores) {
-                    const sum = Number(scores.BE || 0) + Number(scores.FE || 0) + Number(scores.QA || 0);
-                    story.finalScores = { ...scores, US: sum };
+                    story.finalScores = {
+                        BE: Number(scores.BE || 0),
+                        FE: Number(scores.FE || 0),
+                        QA: Number(scores.QA || 0),
+                        US: Number(scores.BE || 0) + Number(scores.FE || 0) + Number(scores.QA || 0)
+                    };
+                    // Пересчитываем общие итоги комнаты
+                    room.totals = { BE: 0, FE: 0, QA: 0 };
+                    room.features.forEach(f => {
+                        f.stories.forEach(s => {
+                            room.totals.BE += (s.finalScores.BE || 0);
+                            room.totals.FE += (s.finalScores.FE || 0);
+                            room.totals.QA += (s.finalScores.QA || 0);
+                        });
+                    });
                 }
-                if (url !== undefined) story.url = url;
+                if (url !== undefined) story.url = String(url);
+                io.to(roomId).emit('ROOM_STATE', room);
             }
-        });
-        roomState.totals = calculateTotals();
-        io.emit('ROOM_STATE', roomState);
-        fs.writeFileSync('history.json', JSON.stringify(roomState.features, null, 2));
-    });
-
-    socket.on('SELECT_STORY', (storyId) => {
-        roomState.activeStoryId = storyId;
-        roomState.revealed = false;
-        roomState.estimationFinished = false;
-        roomState.players.forEach(p => p.vote = null);
-        io.emit('ROOM_STATE', roomState);
-    });
-
-    socket.on('SEND_VOTE', (vote) => {
-        const player = roomState.players.find(p => p.id === socket.id);
-        if (player && !player.isScrumMaster && !roomState.estimationFinished) {
-            player.vote = vote;
-            io.emit('ROOM_STATE', roomState);
         }
     });
 
-    socket.on('REVEAL_CARDS', () => {
-        roomState.revealed = true;
-        io.emit('ROOM_STATE', roomState);
-    });
-
-    socket.on('FINISH_ESTIMATION', () => {
-        roomState.estimationFinished = true;
-        io.emit('ROOM_STATE', roomState);
+    socket.on('FINISH_ESTIMATION', (roomId) => {
+        const room = rooms[roomId];
+        if (room) {
+            room.estimationFinished = true;
+            io.to(roomId).emit('ROOM_STATE', room);
+        }
     });
 
     socket.on('disconnect', () => {
-        roomState.players = roomState.players.filter(p => p.id !== socket.id);
-        io.emit('ROOM_STATE', roomState);
+        console.log('User disconnected:', socket.id);
     });
 });
 
-server.listen(4000, () => console.log('Server is running on 4000'));
+const PORT = process.env.PORT || 10000;
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
