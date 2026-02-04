@@ -1,10 +1,12 @@
 const express = require('express');
 const http = require('http');
+const path = require('path');
 const { Server } = require('socket.io');
 const cors = require('cors');
 
 const app = express();
 app.use(cors());
+app.use(express.static(path.join(__dirname, 'public')));
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -21,6 +23,7 @@ io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
     socket.on('JOIN_ROOM', ({ roomId, userName, role, isScrumMaster }) => {
+        if (!roomId || !userName) return;
         socket.join(roomId);
         
         if (!rooms[roomId]) {
@@ -50,6 +53,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('ADD_FEATURE', ({ roomId, name }) => {
+        if (!roomId || !name) return;
         const room = rooms[roomId];
         if (room) {
             room.features.push({
@@ -62,6 +66,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('ADD_STORY', ({ roomId, featureId, storyName, storyUrl }) => {
+        if (!roomId || !featureId || !storyName) return;
         const room = rooms[roomId];
         if (room) {
             const feature = room.features.find(f => f.id === featureId);
@@ -78,6 +83,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('SELECT_STORY', ({ roomId, storyId }) => {
+        if (!roomId || !storyId) return;
         const room = rooms[roomId];
         if (room) {
             room.activeStoryId = storyId;
@@ -90,6 +96,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('SEND_VOTE', ({ roomId, vote }) => {
+        if (!roomId || vote === undefined) return;
         const room = rooms[roomId];
         if (room && !room.estimationFinished) {
             const player = room.players.find(p => p.id === socket.id);
@@ -110,6 +117,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('UPDATE_STORY_DATA', ({ roomId, storyId, scores, url }) => {
+        if (!roomId || !storyId) return;
         const room = rooms[roomId];
         if (room) {
             const story = room.features.flatMap(f => f.stories).find(s => s.id === storyId);
