@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Planning Poker Pro</title>
+    <title>Agile Poker Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body class="bg-slate-900 text-white">
+<body class="bg-slate-900 text-white font-sans">
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
@@ -30,7 +30,7 @@
 
             useEffect(() => {
                 socket.on('ROOM_STATE', (state) => {
-                    console.log("State update:", state);
+                    console.log("Sync data:", state);
                     setRoomState(state);
                 });
                 return () => socket.off('ROOM_STATE');
@@ -38,115 +38,131 @@
 
             const activeStory = useMemo(() => {
                 if (!roomState) return null;
-                return (roomState.features || []).flatMap(f => f.stories || []).find(s => s.id === roomState.activeStoryId);
+                const all = (roomState.features || []).flatMap(f => f.stories || []);
+                return all.find(s => s.id === roomState.activeStoryId) || null;
             }, [roomState]);
 
             useEffect(() => {
                 if (activeStory) setTempScores(activeStory.finalScores || { BE: 0, FE: 0, QA: 0 });
             }, [activeStory?.id]);
 
-            const safeText = (val) => {
-                if (val === null || val === undefined) return "";
-                if (typeof val === 'object') return val.name || val.userName || "";
+            const safeRender = (val) => {
+                if (!val) return "";
+                if (typeof val === 'object') return val.name || val.userName || "Object";
                 return String(val);
             };
 
-            if (!joined) {
-                return (
-                    <div className="flex items-center justify-center h-screen">
-                        <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 w-80 text-center">
-                            <h2 className="text-xl font-black mb-4 text-blue-400 uppercase italic">Planning Poker</h2>
-                            <input type="text" placeholder="Your Name" className="w-full p-2 mb-4 bg-slate-900 border border-slate-700 rounded" onChange={e => setUserName(e.target.value)} />
-                            <select className="w-full p-2 mb-4 bg-slate-900 border border-slate-700 rounded" value={role} onChange={e => setRole(e.target.value)}>
-                                <option value="BE">Backend</option><option value="FE">Frontend</option><option value="QA">QA</option>
-                            </select>
-                            <label className="flex items-center justify-center gap-2 mb-6 text-sm text-slate-400 cursor-pointer">
-                                <input type="checkbox" checked={isSM} onChange={e => setIsSM(e.target.checked)} />
-                                <span>Scrum Master Mode</span>
-                            </label>
-                            <button onClick={() => { if(userName) { socket.emit('JOIN_ROOM', { roomId, userName, role: isSM?'SM':role, isScrumMaster: isSM }); setJoined(true); } }} className="w-full bg-blue-600 py-2 rounded font-bold uppercase">Enter</button>
-                        </div>
-                    </div>
-                );
-            }
+            const handleJoin = () => {
+                if(!userName) return alert("Enter name");
+                socket.emit('JOIN_ROOM', { roomId, userName, role: isSM ? 'SM' : role, isScrumMaster: isSM });
+                setJoined(true);
+            };
 
-            if (!roomState) return <div className="p-10 text-center uppercase font-bold animate-pulse">Connecting...</div>;
+            if (!joined) return (
+                <div className="flex items-center justify-center h-screen bg-slate-900">
+                    <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 w-80 shadow-2xl">
+                        <h2 className="text-2xl font-black mb-6 text-blue-400 uppercase italic text-center">Planning Poker</h2>
+                        <input type="text" placeholder="Name" className="w-full p-3 mb-4 bg-slate-900 border border-slate-700 rounded text-white" onChange={e => setUserName(e.target.value)} />
+                        <select className="w-full p-3 mb-4 bg-slate-900 border border-slate-700 rounded" value={role} onChange={e => setRole(e.target.value)}>
+                            <option value="BE">Backend</option><option value="FE">Frontend</option><option value="QA">QA</option>
+                        </select>
+                        <label className="flex items-center justify-center gap-2 mb-6 text-slate-400 cursor-pointer">
+                            <input type="checkbox" checked={isSM} onChange={e => setIsSM(e.target.checked)} />
+                            <span>I am Scrum Master</span>
+                        </label>
+                        <button onClick={handleJoin} className="w-full bg-blue-600 py-3 rounded-xl font-bold uppercase hover:bg-blue-500 transition-all">Enter Room</button>
+                    </div>
+                </div>
+            );
+
+            if (!roomState) return <div className="p-10 text-center font-bold animate-pulse uppercase">Connecting to Server...</div>;
 
             const isMeSM = roomState.players.find(p => p.id === socket.id)?.isScrumMaster;
 
             return (
                 <div className="flex h-screen overflow-hidden">
-                    {/* BACKLOG */}
-                    <div className="w-64 bg-slate-800 border-r border-slate-700 flex flex-col">
-                        <div className="p-4 border-b border-slate-700 flex justify-between items-center">
-                            <span className="text-[10px] font-black opacity-50 uppercase tracking-widest italic">Backlog</span>
-                        </div>
+                    {/* LEFTPANEL */}
+                    <div className="w-72 bg-slate-800 border-r border-slate-700 flex flex-col">
+                        <div className="p-4 border-b border-slate-700 text-[10px] font-black opacity-40 uppercase tracking-widest italic">Backlog</div>
                         <div className="flex-1 overflow-y-auto p-3 space-y-4">
                             {(roomState.features || []).map(f => (
                                 <div key={f.id} className="space-y-1">
-                                    <div className="flex justify-between items-center text-[10px] text-blue-500 font-black uppercase italic mb-1">
-                                        <span>{safeText(f.name)}</span>
-                                        {isMeSM && <button onClick={() => { const n = prompt("Name:"); const u = prompt("Link:"); if(n) socket.emit('ADD_STORY', { roomId, featureId: f.id, storyName: n, storyUrl: u }); }} className="bg-blue-600 text-white px-1 rounded">+ STORY</button>}
+                                    <div className="flex justify-between items-center text-[10px] text-blue-500 font-bold uppercase italic mb-1">
+                                        <span>{safeRender(f.name)}</span>
+                                        {isMeSM && <button onClick={() => {
+                                            const n = prompt("Story Name:");
+                                            const u = prompt("Story Link (optional):");
+                                            if(n) socket.emit('ADD_STORY', { roomId, featureId: f.id, storyName: n, storyUrl: u });
+                                        }} className="bg-blue-600 text-white px-1.5 rounded">+ STORY</button>}
                                     </div>
                                     {(f.stories || []).map(s => (
-                                        <div key={s.id} onClick={() => isMeSM && socket.emit('SELECT_STORY', { roomId, storyId: s.id })} className={`p-2 rounded text-[11px] cursor-pointer transition-all ${roomState.activeStoryId === s.id ? 'bg-blue-600 font-bold' : 'bg-slate-700 hover:bg-slate-600'}`}>
-                                            {safeText(s.name)}
+                                        <div key={s.id} onClick={() => isMeSM && socket.emit('SELECT_STORY', { roomId, storyId: s.id })} className={`p-2 rounded text-[11px] cursor-pointer transition-all ${roomState.activeStoryId === s.id ? 'bg-blue-600 font-bold shadow-lg' : 'bg-slate-700 hover:bg-slate-600 opacity-60'}`}>
+                                            {safeRender(s.name)}
                                         </div>
                                     ))}
                                 </div>
                             ))}
-                            {isMeSM && <button onClick={() => { const n = prompt("Sprint name:"); if(n) socket.emit('ADD_FEATURE', { roomId, name: n }); }} className="w-full border border-dashed border-slate-600 p-2 text-[10px] text-slate-500 hover:text-white uppercase font-bold tracking-tighter italic">+ NEW SPRINT</button>}
+                            {isMeSM && <button onClick={() => {
+                                const n = prompt("Sprint Name:");
+                                if(n) socket.emit('ADD_FEATURE', { roomId, name: n });
+                            }} className="w-full border border-dashed border-slate-600 p-2 text-[10px] text-slate-500 hover:text-white uppercase font-bold tracking-tighter italic">+ NEW SPRINT</button>}
                         </div>
                     </div>
 
-                    {/* MAIN */}
+                    {/* MAIN AREA */}
                     <div className="flex-1 flex flex-col bg-slate-900">
                         <div className="p-10 text-center">
-                            <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-2">{activeStory ? safeText(activeStory.name) : "Waiting for SM..."}</h2>
-                            <div className="flex justify-center gap-4 text-xs font-bold uppercase italic text-blue-400">
-                                {activeStory?.url && <a href={activeStory.url.startsWith('http')?activeStory.url:`https://${activeStory.url}`} target="_blank">View Task ↗</a>}
-                                {isMeSM && activeStory && <button onClick={() => { const u = prompt("Link:", activeStory.url); if(u !== null) socket.emit('UPDATE_STORY_DATA', { roomId, storyId: activeStory.id, url: u }); }} className="text-slate-500">Edit Link</button>}
+                            <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-2">{activeStory ? safeRender(activeStory.name) : "Waiting for SM to select task..."}</h2>
+                            <div className="flex justify-center gap-4 text-xs font-bold uppercase italic">
+                                {activeStory?.url && <a href={activeStory.url.startsWith('http')?activeStory.url:`https://${activeStory.url}`} target="_blank" className="text-blue-400 underline">Open Task ↗</a>}
+                                {isMeSM && activeStory && <button onClick={() => {
+                                    const u = prompt("Update Link:", activeStory.url);
+                                    if(u !== null) socket.emit('UPDATE_STORY_DATA', { roomId, storyId: activeStory.id, url: u });
+                                }} className="text-slate-600 hover:text-white transition-colors underline">Edit Link</button>}
                             </div>
                         </div>
 
                         <div className="flex-1 flex justify-center items-center gap-6">
                             {(roomState.players || []).filter(p => !p.isScrumMaster).map(p => (
                                 <div key={p.id} className="flex flex-col items-center">
-                                    <div className={`w-16 h-24 rounded-xl border-2 flex items-center justify-center text-xl font-bold transition-all ${roomState.revealed ? 'bg-white text-black' : (p.vote ? 'bg-blue-600 border-blue-400' : 'bg-slate-800 border-slate-700 opacity-20')}`}>
+                                    <div className={`w-16 h-24 rounded-2xl border-2 flex items-center justify-center text-xl font-bold transition-all duration-300 ${roomState.revealed ? 'bg-white text-black' : (p.vote ? 'bg-blue-600 border-blue-400' : 'bg-slate-800 border-slate-700 opacity-20')}`}>
                                         {roomState.revealed ? p.vote : (p.vote ? '✓' : '')}
                                     </div>
-                                    <span className="text-[10px] mt-2 opacity-50 uppercase italic font-bold tracking-widest">{safeText(p.name)}</span>
+                                    <span className="text-[10px] mt-2 opacity-50 uppercase italic font-bold">{safeRender(p.name)}</span>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="p-8 border-t border-slate-800 text-center bg-slate-800/20">
+                        <div className="p-8 border-t border-slate-800 text-center bg-slate-800/10">
                             {!isMeSM ? (
                                 <div className="flex justify-center gap-2">
                                     {[1, 2, 3, 5, 8, 13, 21].map(v => (
-                                        <button key={v} onClick={() => socket.emit('SEND_VOTE', { roomId, vote: v })} className="w-12 h-16 bg-slate-700 rounded-xl font-bold hover:bg-blue-600 transition-all active:scale-90">{v}</button>
+                                        <button key={v} onClick={() => socket.emit('SEND_VOTE', { roomId, vote: v })} className="w-12 h-16 bg-slate-700 rounded-xl font-bold hover:bg-blue-600 active:scale-90 transition-all">{v}</button>
                                     ))}
                                 </div>
                             ) : (
                                 <div className="flex justify-center gap-4">
-                                    <button onClick={() => socket.emit('REVEAL_CARDS', roomId)} className="bg-amber-500 text-black px-10 py-3 rounded-full font-black uppercase italic tracking-widest shadow-lg shadow-amber-500/20">Reveal Cards</button>
-                                    <button onClick={() => socket.emit('FINISH_ESTIMATION', roomId)} className="bg-green-600 px-10 py-3 rounded-full font-black uppercase italic tracking-widest shadow-lg shadow-green-500/20">Lock Story</button>
+                                    {!roomState.revealed && <button onClick={() => socket.emit('REVEAL_CARDS', roomId)} className="bg-amber-500 text-black px-12 py-3 rounded-full font-black uppercase italic tracking-widest shadow-xl shadow-amber-500/10">Reveal</button>}
+                                    {roomState.revealed && <button onClick={() => socket.emit('FINISH_ESTIMATION', roomId)} className="bg-green-600 px-12 py-3 rounded-full font-black uppercase italic tracking-widest shadow-xl shadow-green-500/10">Lock Score</button>}
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* SIDE PANEL */}
-                    <div className="w-64 bg-slate-800 border-l border-slate-700 p-6 flex flex-col">
+                    {/* SCORE PANEL */}
+                    <div className="w-72 bg-slate-800 border-l border-slate-700 p-6 flex flex-col">
                         <div className="flex-1 space-y-8">
                             <div>
-                                <h3 className="text-[10px] font-black opacity-30 uppercase italic mb-4">Current Points</h3>
-                                <div className="text-6xl font-black text-center italic tracking-tighter mb-8">{activeStory?.finalScores?.US || 0}</div>
+                                <h3 className="text-[10px] font-black opacity-30 uppercase italic mb-4">Results</h3>
+                                <div className="bg-slate-900 p-6 rounded-3xl border-2 border-blue-500/20 text-center mb-8 shadow-inner">
+                                    <div className="text-[8px] text-slate-500 font-black uppercase mb-1">Total US Weight</div>
+                                    <div className="text-6xl font-black text-white italic tracking-tighter">{activeStory?.finalScores?.US || 0}</div>
+                                </div>
                                 {['BE', 'FE', 'QA'].map(d => (
-                                    <div key={d} className="flex items-center gap-2 mb-3">
+                                    <div key={d} className="flex items-center gap-3 mb-4">
                                         <span className="w-8 text-[10px] font-black text-blue-500 uppercase italic">{d}</span>
                                         <input type="number" disabled={!isMeSM} value={tempScores[d] || ''} 
-                                            className="flex-1 bg-slate-900 border border-slate-700 p-2 rounded text-xs font-bold outline-none" 
+                                            className="flex-1 bg-slate-900 border border-slate-700 p-3 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-all" 
                                             onChange={e => {
                                                 const s = {...tempScores, [d]: Number(e.target.value)};
                                                 setTempScores(s);
@@ -156,11 +172,11 @@
                                 ))}
                             </div>
                             <div className="pt-6 border-t border-slate-700">
-                                <h3 className="text-[10px] font-black opacity-30 uppercase italic mb-4">Sprint Totals</h3>
+                                <h3 className="text-[10px] font-black opacity-30 uppercase italic mb-4">Global Sum</h3>
                                 {['BE', 'FE', 'QA'].map(d => (
-                                    <div key={d} className="flex justify-between text-xs mb-2">
-                                        <span className="opacity-50 italic">{d} Total:</span>
-                                        <span className="font-bold text-blue-400">{roomState.totals?.[d] || 0}</span>
+                                    <div key={d} className="flex justify-between text-[11px] mb-2">
+                                        <span className="opacity-50 italic uppercase">{d} Total:</span>
+                                        <span className="font-bold text-blue-400 italic">{roomState.totals?.[d] || 0}</span>
                                     </div>
                                 ))}
                             </div>
