@@ -3,6 +3,7 @@ const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const fs = require('fs');
 
 const app = express();
 app.use(cors());
@@ -17,7 +18,27 @@ const io = new Server(server, {
 });
 
 // Хранилище комнат в памяти сервера
-const rooms = {};
+let rooms = {};
+
+const HISTORY_FILE = path.join(__dirname, 'history.json');
+
+// Загрузка состояния при старте
+if (fs.existsSync(HISTORY_FILE)) {
+    try {
+        const data = fs.readFileSync(HISTORY_FILE, 'utf8');
+        rooms = JSON.parse(data);
+        console.log('Room state loaded from history.json');
+    } catch (err) {
+        console.error('Error loading history.json:', err);
+    }
+}
+
+// Функция для сохранения состояния
+const saveState = () => {
+    fs.writeFile(HISTORY_FILE, JSON.stringify(rooms, null, 2), (err) => {
+        if (err) console.error('Error saving history.json:', err);
+    });
+};
 
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
@@ -50,6 +71,7 @@ io.on('connection', (socket) => {
         });
 
         io.to(roomId).emit('ROOM_STATE', rooms[roomId]);
+        saveState();
     });
 
     socket.on('ADD_FEATURE', ({ roomId, name }) => {
@@ -62,6 +84,7 @@ io.on('connection', (socket) => {
                 stories: []
             });
             io.to(roomId).emit('ROOM_STATE', room);
+            saveState();
         }
     });
 
@@ -78,6 +101,7 @@ io.on('connection', (socket) => {
                     finalScores: { BE: 0, FE: 0, QA: 0, US: 0 }
                 });
                 io.to(roomId).emit('ROOM_STATE', room);
+                saveState();
             }
         }
     });
@@ -92,6 +116,7 @@ io.on('connection', (socket) => {
             // Сбрасываем голоса при выборе новой задачи
             room.players.forEach(p => p.vote = null);
             io.to(roomId).emit('ROOM_STATE', room);
+            saveState();
         }
     });
 
@@ -104,6 +129,7 @@ io.on('connection', (socket) => {
                 // Сохраняем ТОЛЬКО число, чтобы не ломать фронтенд объектами
                 player.vote = Number(vote);
                 io.to(roomId).emit('ROOM_STATE', room);
+                saveState();
             }
         }
     });
@@ -113,6 +139,7 @@ io.on('connection', (socket) => {
         if (room) {
             room.revealed = true;
             io.to(roomId).emit('ROOM_STATE', room);
+            saveState();
         }
     });
 
@@ -141,6 +168,7 @@ io.on('connection', (socket) => {
                 }
                 if (url !== undefined) story.url = String(url);
                 io.to(roomId).emit('ROOM_STATE', room);
+                saveState();
             }
         }
     });
@@ -150,6 +178,7 @@ io.on('connection', (socket) => {
         if (room) {
             room.estimationFinished = true;
             io.to(roomId).emit('ROOM_STATE', room);
+            saveState();
         }
     });
 

@@ -86,8 +86,8 @@
             const isMeSM = roomState.players.find(p => p.id === socket.id)?.isScrumMaster;
 
             return (
-                <div className="flex h-screen overflow-hidden">
-                    <div className="w-72 bg-slate-800 border-r border-slate-700 flex flex-col shadow-2xl">
+                <div className="flex flex-col lg:flex-row h-screen overflow-hidden">
+                    <div className="w-full lg:w-72 lg:h-full h-1/4 min-h-[200px] shrink-0 bg-slate-800 border-b lg:border-b-0 lg:border-r border-slate-700 flex flex-col shadow-2xl z-10">
                         <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/20">
                             <span className="text-[10px] font-black opacity-40 uppercase tracking-widest italic">Backlog</span>
                             <button onClick={() => {navigator.clipboard.writeText(window.location.href); alert("Room link copied!")}} className="text-[9px] text-blue-400 font-bold border border-blue-400/30 px-2 py-0.5 rounded hover:bg-blue-400/10 uppercase">Copy URL</button>
@@ -118,8 +118,8 @@
                         </div>
                     </div>
 
-                    <div className="flex-1 flex flex-col bg-[#0f172a] relative">
-                        <div className="p-12 text-center">
+                    <div className="flex-1 flex flex-col bg-[#0f172a] relative overflow-y-auto lg:overflow-hidden">
+                        <div className="p-8 lg:p-12 text-center shrink-0">
                             <h2 className="text-5xl font-black italic uppercase tracking-tighter mb-4 text-white">{activeStory ? cleanText(activeStory.name) : "Select Story"}</h2>
                             <div className="flex justify-center gap-6 text-[11px] font-black uppercase italic tracking-widest">
                                 {activeStory?.url && <a href={activeStory.url.startsWith('http')?activeStory.url:`https://${activeStory.url}`} target="_blank" className="text-blue-400 hover:text-blue-300 underline">Documentation ↗</a>}
@@ -127,9 +127,9 @@
                             </div>
                         </div>
 
-                        <div className="flex-1 flex justify-center items-center gap-8 px-10">
+                        <div className="flex-1 flex justify-center content-start lg:items-center gap-4 lg:gap-8 px-4 lg:px-10 flex-wrap overflow-y-auto py-4">
                             {(roomState.players || []).filter(p => !p.isScrumMaster).map(p => (
-                                <div key={p.id} className="flex flex-col items-center">
+                                <div key={p.id} className="flex flex-col items-center shrink-0 w-20 lg:w-24">
                                     <div className={`w-20 h-32 rounded-2xl border-2 flex items-center justify-center text-3xl font-black transition-all duration-500 ${roomState.revealed ? 'bg-white text-slate-900 border-white shadow-2xl scale-110' : (p.vote ? 'bg-blue-600 border-blue-400 shadow-lg -translate-y-4' : 'bg-slate-800/50 border-slate-700 opacity-20')}`}>
                                         {roomState.revealed ? p.vote : (p.vote ? '✓' : '')}
                                     </div>
@@ -139,26 +139,26 @@
                             ))}
                         </div>
 
-                        <div className="p-10 border-t border-slate-800 bg-slate-900/40">
+                        <div className="p-4 lg:p-10 border-t border-slate-800 bg-slate-900/40 shrink-0 z-10">
                             {!isMeSM ? (
-                                <div className="flex justify-center gap-3">
+                                <div className="flex justify-center gap-2 lg:gap-3 flex-wrap">
                                     {/* ОБНОВЛЕННЫЙ ГРЕЙД ГОЛОСОВ */}
                                     {[1, 2, 4, 8, 12, 16, 24, 32, 40, 90].map(v => (
                                         <button key={v} disabled={roomState.estimationFinished} onClick={() => socket.emit('SEND_VOTE', { roomId, vote: v })} 
-                                                className={`w-14 h-20 rounded-2xl font-black text-xl border-2 transition-all ${roomState.estimationFinished ? 'opacity-10 scale-90 grayscale' : 'bg-slate-800 border-slate-700 hover:bg-blue-600 active:scale-90 shadow-xl'}`}>{v}</button>
+                                                className={`w-12 h-16 lg:w-14 lg:h-20 rounded-xl lg:rounded-2xl font-black text-lg lg:text-xl border-2 transition-all ${roomState.estimationFinished ? 'opacity-10 scale-90 grayscale' : 'bg-slate-800 border-slate-700 hover:bg-blue-600 active:scale-90 shadow-xl'}`}>{v}</button>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="flex justify-center gap-6">
-                                    {!roomState.revealed && <button onClick={() => socket.emit('REVEAL_CARDS', roomId)} className="bg-amber-500 text-slate-900 px-14 py-4 rounded-full font-black uppercase italic tracking-widest shadow-xl shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all">Reveal Cards</button>}
-                                    {roomState.revealed && !roomState.estimationFinished && <button onClick={() => socket.emit('FINISH_ESTIMATION', roomId)} className="bg-green-600 text-white px-14 py-4 rounded-full font-black uppercase italic tracking-widest shadow-xl shadow-green-500/20 hover:scale-105 active:scale-95 transition-all">Lock Result</button>}
-                                    {roomState.estimationFinished && <span className="text-green-500 font-black uppercase italic tracking-widest border border-green-500/30 px-8 py-4 rounded-full bg-green-500/5">Estimation Locked</span>}
+                                <div className="flex justify-center gap-4 lg:gap-6 flex-wrap">
+                                    {!roomState.revealed && <button onClick={() => socket.emit('REVEAL_CARDS', roomId)} className="bg-amber-500 text-slate-900 px-8 py-3 lg:px-14 lg:py-4 rounded-full font-black text-sm lg:text-base uppercase italic tracking-widest shadow-xl shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all">Reveal Cards</button>}
+                                    {roomState.revealed && !roomState.estimationFinished && <button onClick={() => socket.emit('FINISH_ESTIMATION', roomId)} className="bg-green-600 text-white px-8 py-3 lg:px-14 lg:py-4 rounded-full font-black text-sm lg:text-base uppercase italic tracking-widest shadow-xl shadow-green-500/20 hover:scale-105 active:scale-95 transition-all">Lock Result</button>}
+                                    {roomState.estimationFinished && <span className="text-green-500 font-black text-sm lg:text-base uppercase italic tracking-widest border border-green-500/30 px-6 py-3 lg:px-8 lg:py-4 rounded-full bg-green-500/5">Estimation Locked</span>}
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    <div className="w-80 bg-slate-800 border-l border-slate-700 p-8 flex flex-col shadow-2xl text-white">
+                    <div className="w-full lg:w-80 lg:h-full shrink-0 bg-slate-800 border-t lg:border-t-0 lg:border-l border-slate-700 p-6 lg:p-8 flex flex-col shadow-2xl text-white z-10 overflow-y-auto">
                         <div className="flex-1 space-y-10">
                             <section>
                                 <h3 className="text-[10px] font-black text-slate-500 uppercase italic mb-6 tracking-widest">Story Weight</h3>

@@ -1,41 +1,520 @@
-[
-  {
-    "id": 1768309160699,
-    "name": "WoT plus sprint 1",
-    "stories": [
+{
+  "test-room": {
+    "players": [
       {
-        "id": 1768309179595,
-        "name": "Final assets",
-        "url": "https://jira.wargaming.net/browse/WOTPRG-9666",
-        "finalScores": {
-          "US": 3,
-          "BE": 1,
-          "FE": 2,
-          "QA": 0
-        }
-      },
-      {
-        "id": 1768309197403,
-        "name": "Code review",
-        "url": "https://jira.wargaming.net/browse/WOTPRG-9666",
-        "finalScores": {
-          "US": 3,
-          "BE": 2,
-          "FE": 1,
-          "QA": 0
-        }
-      },
-      {
-        "id": 1768309211564,
-        "name": "Reward screen",
-        "url": "https://jira.wargaming.net/browse/WOTPRG-9666",
-        "finalScores": {
-          "US": 11,
-          "BE": 3,
-          "FE": 8,
-          "QA": 0
-        }
+        "id": "jq4csb0xh8bdYfZGAAAB",
+        "name": "TestUser",
+        "role": "BE",
+        "isScrumMaster": true,
+        "vote": 5
       }
-    ]
+    ],
+    "features": [
+      {
+        "id": "464mo2o",
+        "name": "Feature 1",
+        "stories": [
+          {
+            "id": "e0oz01h",
+            "name": "Story 1",
+            "url": "http://test.com",
+            "finalScores": {
+              "BE": 3,
+              "FE": 2,
+              "QA": 1,
+              "US": 6
+            }
+          }
+        ]
+      }
+    ],
+    "activeStoryId": "e0oz01h",
+    "revealed": true,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 3,
+      "FE": 2,
+      "QA": 1
+    }
+  },
+  "w9uzb53": {
+    "players": [
+      {
+        "id": "zUV26JcVIyHqxpc2AAAB",
+        "name": "Jules",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "xe7lr4w": {
+    "players": [
+      {
+        "id": "g924aFE83-ePjDpBAAAD",
+        "name": "Player 0",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "4droyxr": {
+    "players": [
+      {
+        "id": "hwZzqgOsJeb36GsEAAAF",
+        "name": "Player 1",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "ewglwdp": {
+    "players": [
+      {
+        "id": "Zg1G1I2_JMhMfqMcAAAH",
+        "name": "Player 2",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "pf81jkt": {
+    "players": [
+      {
+        "id": "D54sFZOGfAMFfJQaAAAJ",
+        "name": "Player 3",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "lr0nlwl": {
+    "players": [
+      {
+        "id": "p-veYdNelqtMeOrOAAAL",
+        "name": "Player 4",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "8lr0f2i": {
+    "players": [
+      {
+        "id": "RriLN9TEAPJekwOnAAAN",
+        "name": "Player 5",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "wompcll": {
+    "players": [
+      {
+        "id": "evBnnnSEY7IB__k0AAAP",
+        "name": "Player 6",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "gzbsde0": {
+    "players": [
+      {
+        "id": "x6rFNEwTBS_Op6qjAAAR",
+        "name": "Player 7",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "f0davwu": {
+    "players": [
+      {
+        "id": "lGIfqoaXSpNTJwLrAAAT",
+        "name": "Player 8",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "v1pc26b": {
+    "players": [
+      {
+        "id": "NB03zFcnquWhsYl5AAAV",
+        "name": "Player 9",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "fzhe0l3": {
+    "players": [
+      {
+        "id": "e2WoaOOlIRwwUNhYAAAB",
+        "name": "Jules",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "ou0raaa": {
+    "players": [
+      {
+        "id": "okm5Lrpmii7Zm4mlAAAD",
+        "name": "Player 0",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "zjix19u": {
+    "players": [
+      {
+        "id": "C6bWeTgDB3ln5zf4AAAF",
+        "name": "Player 1",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "4ja3dqv": {
+    "players": [
+      {
+        "id": "z619AdIsLJ-yxQGrAAAH",
+        "name": "Player 2",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "y2g56rt": {
+    "players": [
+      {
+        "id": "ugdCuQXII5DT_TKrAAAJ",
+        "name": "Player 3",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "yew5165": {
+    "players": [
+      {
+        "id": "N4ycHxVwNmofAHSJAAAL",
+        "name": "Player 4",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "xaeota1": {
+    "players": [
+      {
+        "id": "K-Fgg3lOpPzbSr44AAAN",
+        "name": "Player 5",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "58vxjil": {
+    "players": [
+      {
+        "id": "c42QHxVZgO2ZyIFWAAAP",
+        "name": "Player 6",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "l3wafui": {
+    "players": [
+      {
+        "id": "bvqgX7sjY-5PnTv0AAAR",
+        "name": "Player 7",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "uneg4iw": {
+    "players": [
+      {
+        "id": "t6FK4aLSXYfTECxhAAAT",
+        "name": "Player 8",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "djeyikn": {
+    "players": [
+      {
+        "id": "RgD4hkoIX0L8ZSA_AAAV",
+        "name": "Player 9",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "6aibiub": {
+    "players": [
+      {
+        "id": "mSBjkguGLtJMApPoAAAX",
+        "name": "Player 10",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
+  },
+  "3wl8gjo": {
+    "players": [
+      {
+        "id": "mY8-yzOG8JteQwbjAAAZ",
+        "name": "Player 11",
+        "role": "BE",
+        "isScrumMaster": false,
+        "vote": null
+      }
+    ],
+    "features": [],
+    "activeStoryId": null,
+    "revealed": false,
+    "estimationFinished": false,
+    "totals": {
+      "BE": 0,
+      "FE": 0,
+      "QA": 0
+    }
   }
-]
+}
