@@ -143,7 +143,7 @@
                             {!isMeSM ? (
                                 <div className="flex justify-center gap-3">
                                     {/* ОБНОВЛЕННЫЙ ГРЕЙД ГОЛОСОВ */}
-                                    {[1, 2, 4, 8, 12, 16, 24, 40, 80].map(v => (
+                                    {[1, 2, 4, 8, 12, 16, 24, 32, 40, 90].map(v => (
                                         <button key={v} disabled={roomState.estimationFinished} onClick={() => socket.emit('SEND_VOTE', { roomId, vote: v })} 
                                                 className={`w-14 h-20 rounded-2xl font-black text-xl border-2 transition-all ${roomState.estimationFinished ? 'opacity-10 scale-90 grayscale' : 'bg-slate-800 border-slate-700 hover:bg-blue-600 active:scale-90 shadow-xl'}`}>{v}</button>
                                     ))}
