@@ -129,9 +129,22 @@
 
                         <div className="flex-1 flex justify-center content-start lg:items-center gap-4 lg:gap-8 px-4 lg:px-10 flex-wrap overflow-y-auto py-4">
                             {(roomState.players || []).filter(p => !p.isScrumMaster).map(p => (
-                                <div key={p.id} className="flex flex-col items-center shrink-0 w-20 lg:w-24">
+                                <div key={p.id} className="flex flex-col items-center shrink-0 w-20 lg:w-24 relative group">
+                                    {isMeSM && (
+                                        <button
+                                            onClick={() => {
+                                                if (window.confirm(`Are you sure you want to remove ${cleanText(p.name)}?`)) {
+                                                    socket.emit('REMOVE_PLAYER', { roomId, playerId: p.id });
+                                                }
+                                            }}
+                                            className="absolute -top-2 -right-2 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-20 hover:bg-red-500"
+                                            title="Remove player"
+                                        >
+                                            ×
+                                        </button>
+                                    )}
                                     <div
-                                        className={`w-20 h-32 rounded-2xl border-2 flex items-center justify-center text-3xl font-black transition-all duration-500 bg-cover bg-center ${roomState.revealed ? 'bg-white text-slate-900 border-white shadow-2xl scale-110' : (p.vote ? 'border-blue-400 shadow-lg -translate-y-4' : 'bg-slate-800/50 border-slate-700 opacity-20')}`}
+                                        className={`w-20 h-32 rounded-2xl border-2 flex items-center justify-center text-3xl font-black transition-all duration-500 relative bg-cover bg-center ${roomState.revealed ? 'bg-white text-slate-900 border-white shadow-2xl scale-110' : (p.vote ? 'border-blue-400 shadow-lg -translate-y-4' : 'bg-slate-800/50 border-slate-700 opacity-20')}`}
                                         style={!roomState.revealed && p.vote ? { backgroundImage: "url('/card-back.png')" } : {}}
                                     >
                                         {roomState.revealed ? p.vote : ''}
