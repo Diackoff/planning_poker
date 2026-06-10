@@ -143,8 +143,11 @@
                                             ×
                                         </button>
                                     )}
-                                    <div className={`w-20 h-32 rounded-2xl border-2 flex items-center justify-center text-3xl font-black transition-all duration-500 relative ${roomState.revealed ? 'bg-white text-slate-900 border-white shadow-2xl scale-110' : (p.vote ? 'bg-blue-600 border-blue-400 shadow-lg -translate-y-4' : 'bg-slate-800/50 border-slate-700 opacity-20')}`}>
-                                        {roomState.revealed ? p.vote : (p.vote ? '✓' : '')}
+                                    <div
+                                        className={`w-20 h-32 rounded-2xl border-2 flex items-center justify-center text-3xl font-black transition-all duration-500 relative bg-cover bg-center ${roomState.revealed ? 'bg-white text-slate-900 border-white shadow-2xl scale-110' : (p.vote ? 'border-blue-400 shadow-lg -translate-y-4' : 'bg-slate-800/50 border-slate-700 opacity-20')}`}
+                                        style={!roomState.revealed && p.vote ? { backgroundImage: "url('/card-back.png')" } : {}}
+                                    >
+                                        {roomState.revealed ? p.vote : ''}
                                     </div>
                                     <span className="text-[10px] mt-4 font-black uppercase italic tracking-widest text-slate-400">{cleanText(p.name)}</span>
                                     <span className="text-[8px] font-bold text-blue-500/80 uppercase mt-0.5">{p.role}</span>
