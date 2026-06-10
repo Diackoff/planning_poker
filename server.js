@@ -182,6 +182,16 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('REMOVE_PLAYER', ({ roomId, playerId }) => {
+        if (!roomId || !playerId) return;
+        const room = rooms[roomId];
+        if (room) {
+            room.players = room.players.filter(p => p.id !== playerId);
+            io.to(roomId).emit('ROOM_STATE', room);
+            saveState();
+        }
+    });
+
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
     });
