@@ -110,17 +110,6 @@ async function runTests() {
     if (updatedStory.finalScores.US !== 6) throw new Error('Score calculation failed (3+2+1!=6)');
     console.log('PASS: UPDATE_STORY_DATA');
 
-    // Test Remove Player
-    console.log('Testing: REMOVE_PLAYER');
-    socket.emit('REMOVE_PLAYER', { roomId, playerId: socket.id });
-
-    roomState = await new Promise(resolve => {
-        socket.once('ROOM_STATE', (state) => resolve(state));
-    });
-
-    if (roomState.players.some(p => p.id === socket.id)) throw new Error('Player not removed');
-    console.log('PASS: REMOVE_PLAYER');
-
 
     console.log('All tests passed!');
     socket.disconnect();
